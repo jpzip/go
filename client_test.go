@@ -121,7 +121,8 @@ func TestLookupGroupInvalid(t *testing.T) {
 func TestPreloadAllSeedsL1(t *testing.T) {
 	dict := ZipcodeDict{"2310831": baseEntry()}
 	client, _, hits := newServer(t, func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/all.json" {
+		// Preload(all) fans out to /g/0..9; only /g/2.json has data, the rest 404.
+		if r.URL.Path == "/g/2.json" {
 			_ = json.NewEncoder(w).Encode(dict)
 			return
 		}
@@ -137,8 +138,8 @@ func TestPreloadAllSeedsL1(t *testing.T) {
 	if got == nil || got.City != "横浜市中区" {
 		t.Fatalf("unexpected: %+v", got)
 	}
-	if atomic.LoadInt32(hits) != 1 {
-		t.Fatalf("expected 1 fetch, got %d", atomic.LoadInt32(hits))
+	if atomic.LoadInt32(hits) != 10 {
+		t.Fatalf("expected 10 fetches (g/0..9 fanout), got %d", atomic.LoadInt32(hits))
 	}
 }
 
@@ -149,7 +150,7 @@ func TestGetMetaCachedAndMismatch(t *testing.T) {
 		TotalZipcodes: 1, PrefixCount: 1,
 		ByPref:     map[string]int{"14": 1},
 		DataSource: "https://example.com",
-		Endpoints:  Endpoints{All: "/all.json", Group: "/g/{prefix1}.json", Prefix: "/p/{prefix3}.json"},
+		Endpoints:  Endpoints{Group: "/g/{prefix1}.json", Prefix: "/p/{prefix3}.json"},
 	}
 	var mismatches int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

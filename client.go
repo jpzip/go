@@ -145,9 +145,35 @@ func (c *Client) LookupGroup(ctx context.Context, prefix string) (ZipcodeDict, e
 	return nil, fmt.Errorf("%w: %q", ErrInvalidPrefix, prefix)
 }
 
-// LookupAll fetches /all.json.
+// LookupAll fetches the full dataset by fanning out across /g/0..9.json
+// in parallel and merging the results. The CDN does not publish a single
+// /all.json because the combined file exceeds Cloudflare Pages' 25 MiB
+// per-file limit.
 func (c *Client) LookupAll(ctx context.Context) (ZipcodeDict, error) {
-	return c.fetchURL(ctx, c.baseURL+"/all.json")
+	var wg sync.WaitGroup
+	results := make([]ZipcodeDict, 10)
+	errs := make([]error, 10)
+	for i := 0; i < 10; i++ {
+		i := i
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			d, err := c.fetchURL(ctx, fmt.Sprintf("%s/g/%d.json", c.baseURL, i))
+			results[i] = d
+			errs[i] = err
+		}()
+	}
+	wg.Wait()
+	out := make(ZipcodeDict)
+	for i, d := range results {
+		if errs[i] != nil {
+			return nil, errs[i]
+		}
+		for k, v := range d {
+			out[k] = v
+		}
+	}
+	return out, nil
 }
 
 // GetMeta returns the cached /meta.json. The first call hits the network;

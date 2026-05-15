@@ -31,12 +31,11 @@ type ZipcodeEntry struct {
 	Towns          []Town `json:"towns"`
 }
 
-// ZipcodeDict is the on-the-wire shape of /all.json, /g/*.json, /p/*.json.
+// ZipcodeDict is the on-the-wire shape of /g/*.json and /p/*.json.
 type ZipcodeDict = map[string]ZipcodeEntry
 
 // Endpoints is part of /meta.json.
 type Endpoints struct {
-	All    string `json:"all"`
 	Group  string `json:"group"`
 	Prefix string `json:"prefix"`
 }
