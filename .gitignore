@@ -1,0 +1,11 @@
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+*.test
+*.out
+coverage.out
+
+go.work
+go.work.sum
