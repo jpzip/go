@@ -21,7 +21,7 @@ func baseEntry() ZipcodeEntry {
 		CityKana:       "ヨコハマシナカク",
 		CityRoma:       "Yokohama Shi Naka Ku",
 		CityCode:       "14104",
-		Towns:          []Town{{Town: "矢口台", Kana: "ヤグチダイ", Roma: "Yaguchidai"}},
+		Towns:          []Town{{Town: "本町", Kana: "ホンチョウ", Roma: "Honcho"}},
 	}
 }
 
@@ -53,7 +53,7 @@ func TestLookupMalformedNoFetch(t *testing.T) {
 }
 
 func TestLookupHit(t *testing.T) {
-	dict := ZipcodeDict{"2310831": baseEntry()}
+	dict := ZipcodeDict{"2310017": baseEntry()}
 	client, _, _ := newServer(t, func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/p/231.json" {
 			w.WriteHeader(http.StatusNotFound)
@@ -61,7 +61,7 @@ func TestLookupHit(t *testing.T) {
 		}
 		_ = json.NewEncoder(w).Encode(dict)
 	})
-	got, err := client.Lookup(context.Background(), "2310831")
+	got, err := client.Lookup(context.Background(), "2310017")
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
@@ -71,12 +71,12 @@ func TestLookupHit(t *testing.T) {
 }
 
 func TestLookupL1Caching(t *testing.T) {
-	dict := ZipcodeDict{"2310831": baseEntry()}
+	dict := ZipcodeDict{"2310017": baseEntry()}
 	client, _, hits := newServer(t, func(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(dict)
 	})
 	for i := 0; i < 5; i++ {
-		if _, err := client.Lookup(context.Background(), "2310831"); err != nil {
+		if _, err := client.Lookup(context.Background(), "2310017"); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -86,7 +86,7 @@ func TestLookupL1Caching(t *testing.T) {
 }
 
 func TestLookupGroupTwoDigitFanout(t *testing.T) {
-	dict := ZipcodeDict{"2310831": baseEntry()}
+	dict := ZipcodeDict{"2310017": baseEntry()}
 	var fetchedPaths sync.Map
 	client, _, hits := newServer(t, func(w http.ResponseWriter, r *http.Request) {
 		fetchedPaths.Store(r.URL.Path, true)
@@ -103,8 +103,8 @@ func TestLookupGroupTwoDigitFanout(t *testing.T) {
 	if atomic.LoadInt32(hits) != 10 {
 		t.Fatalf("expected 10 fetches, got %d", atomic.LoadInt32(hits))
 	}
-	if _, ok := got["2310831"]; !ok {
-		t.Fatalf("missing 2310831 in %+v", got)
+	if _, ok := got["2310017"]; !ok {
+		t.Fatalf("missing 2310017 in %+v", got)
 	}
 }
 
@@ -119,7 +119,7 @@ func TestLookupGroupInvalid(t *testing.T) {
 }
 
 func TestPreloadAllSeedsL1(t *testing.T) {
-	dict := ZipcodeDict{"2310831": baseEntry()}
+	dict := ZipcodeDict{"2310017": baseEntry()}
 	client, _, hits := newServer(t, func(w http.ResponseWriter, r *http.Request) {
 		// Preload(all) fans out to /g/0..9; only /g/2.json has data, the rest 404.
 		if r.URL.Path == "/g/2.json" {
@@ -131,7 +131,7 @@ func TestPreloadAllSeedsL1(t *testing.T) {
 	if err := client.Preload(context.Background(), "all"); err != nil {
 		t.Fatal(err)
 	}
-	got, err := client.Lookup(context.Background(), "2310831")
+	got, err := client.Lookup(context.Background(), "2310017")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,7 +179,7 @@ func TestGetMetaCachedAndMismatch(t *testing.T) {
 
 func TestL2Cache(t *testing.T) {
 	cache := newMemMapCache()
-	dict := ZipcodeDict{"2310831": baseEntry()}
+	dict := ZipcodeDict{"2310017": baseEntry()}
 	var fetches int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		atomic.AddInt32(&fetches, 1)
@@ -188,7 +188,7 @@ func TestL2Cache(t *testing.T) {
 	t.Cleanup(srv.Close)
 
 	c1 := New(WithBaseURL(srv.URL), WithCache(cache))
-	if _, err := c1.Lookup(context.Background(), "2310831"); err != nil {
+	if _, err := c1.Lookup(context.Background(), "2310017"); err != nil {
 		t.Fatal(err)
 	}
 	if atomic.LoadInt32(&fetches) != 1 {
@@ -197,7 +197,7 @@ func TestL2Cache(t *testing.T) {
 
 	// New client, fresh L1 — should hit L2 instead of the network.
 	c2 := New(WithBaseURL(srv.URL), WithCache(cache))
-	got, err := c2.Lookup(context.Background(), "2310831")
+	got, err := c2.Lookup(context.Background(), "2310017")
 	if err != nil {
 		t.Fatal(err)
 	}

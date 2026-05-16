@@ -22,7 +22,7 @@ import (
 )
 
 ctx := context.Background()
-entry, err := jpzip.Lookup(ctx, "2310831")
+entry, err := jpzip.Lookup(ctx, "2310017")
 // entry == nil なら見つからなかった
 
 dict, err := jpzip.LookupGroup(ctx, "23")  // 2 桁は 10 並列 fetch
@@ -42,7 +42,7 @@ client := jpzip.New(
 if err := client.Preload(ctx, "all"); err != nil {
     log.Fatal(err)
 }
-entry, err := client.Lookup(ctx, "2310831")
+entry, err := client.Lookup(ctx, "2310017")
 ```
 
 ## Cache インターフェース
