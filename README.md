@@ -2,6 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/jpzip/go.svg)](https://pkg.go.dev/github.com/jpzip/go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jpzip/go)](https://goreportcard.com/report/github.com/jpzip/go)
+[![Docs](https://img.shields.io/badge/docs-jpzip.nadai.dev-0066cc.svg)](https://jpzip.nadai.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Test](https://github.com/jpzip/go/actions/workflows/test.yml/badge.svg)](https://github.com/jpzip/go/actions/workflows/test.yml)
 
